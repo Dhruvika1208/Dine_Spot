@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #ea580c;
+  /* Orange 600 */
+  --primary-hover: #c2410c;
+  /* Orange 700 */
+  --secondary: #991b1b;
+  /* Red 800 */
+  --accent: #f59e0b;
+  /* Amber 500 */
+  --bg-main: #fffaf5;
+  --text-main: #1c1917;
+}
+
+body {
+  margin: 0;
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(234, 88, 12, 0.05);
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #1c1917 0%, #44403c 100%);
+}
+
+.food-card-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.food-card-hover:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px -15px rgba(234, 88, 12, 0.2);
+}
+
+@keyframes bounce-slow {
+
+  0%,
+  100% {
+    transform: translateY(-5%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 4s infinite;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-orange-50;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-orange-200 rounded-full hover:bg-orange-300 transition-colors;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.02em;
+}
