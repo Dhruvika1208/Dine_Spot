@@ -22,4 +22,18 @@ View reservation history
 
 Cancel reservations
 
+###Staff Side
+
+Staff login with role-based access
+
+Dashboard showing reservation statistics
+
+Add and manage tables
+
+Add, edit, and delete menu items
+
+View and manage reservations
+
+Update reservation status
+
 Add restaurants to favourites
