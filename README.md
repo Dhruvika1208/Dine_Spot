@@ -1,4 +1,4 @@
-**DineSpot**
+#DineSpot
 
 Smart Restaurant Reservation and Management System
 
