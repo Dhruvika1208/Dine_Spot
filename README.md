@@ -37,3 +37,34 @@ View and manage reservations
 Update reservation status
 
 Add restaurants to favourites
+
+Tech Stack
+Frontend
+
+React.js
+
+React Router DOM
+
+Context API
+
+Axios
+
+Tailwind CSS
+
+Backend
+
+Node.js
+
+Express.js
+
+JWT for authentication
+
+bcrypt for password hashing
+
+Nodemailer for email functionality
+
+Database
+
+MongoDB
+
+Mongoose
