@@ -8,39 +8,49 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
-        const role = localStorage.getItem('role');
-        const restaurantId = localStorage.getItem('restaurantId'); // Retrieve restaurantId
-        if (storedUser && token) {
-            try {
-                const parsedUser = JSON.parse(storedUser);
-                // Ensure role and restaurantId are synced
-                setUser({ ...parsedUser, role: role || parsedUser.role, restaurantId: restaurantId || parsedUser.restaurantId });
-            } catch (err) {
-                console.error('Auth Session Error');
-                logout();
+        const restoreSession = () => {
+            const storedUser = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            const restaurantId = localStorage.getItem('restaurantId');
+
+            if (token && storedUser) {
+                try {
+                    const parsedUser = JSON.parse(storedUser);
+                    setUser({
+                        ...parsedUser,
+                        token,
+                        role: role || parsedUser.role,
+                        restaurantId: restaurantId || parsedUser.restaurantId
+                    });
+                } catch (err) {
+                    console.error('Session restoration failed:', err);
+                    logout();
+                }
             }
-        }
-        setLoading(false);
+            setLoading(false);
+        };
+        restoreSession();
     }, []);
 
     const loginUser = async (email, password) => {
         const { data } = await axiosInstance.post('/api/auth/login', { email, password });
-        setUser(data);
-        localStorage.setItem('user', JSON.stringify(data));
+        const userData = { ...data, role: data.role || 'user' };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', data.token);
-        localStorage.setItem('role', data.role || 'user');
+        localStorage.setItem('role', userData.role);
         return data;
     };
 
     const loginStaff = async (email, password) => {
         const { data } = await axiosInstance.post('/api/auth/staff-login', { email, password });
-        setUser({ ...data.staff, role: data.role, restaurantId: data.restaurantId });
+        const staffData = { ...data.staff, role: data.role, restaurantId: data.restaurantId };
+        setUser(staffData);
         localStorage.setItem('token', data.token);
-        localStorage.setItem('role', data.role);
-        localStorage.setItem('restaurantId', data.restaurantId);
-        localStorage.setItem('user', JSON.stringify({ ...data.staff, role: data.role, restaurantId: data.restaurantId }));
+        localStorage.setItem('role', staffData.role);
+        localStorage.setItem('restaurantId', staffData.restaurantId);
+        localStorage.setItem('user', JSON.stringify(staffData));
         return data;
     };
 

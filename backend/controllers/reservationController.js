@@ -280,7 +280,19 @@ exports.getUserReservations = async (req, res) => {
 
 exports.getRestaurantReservations = async (req, res) => {
     try {
-        const reservations = await Reservation.find({ restaurantId: req.user.restaurantId })
+        const reservations = await Reservation.find({ restaurantId: new mongoose.Types.ObjectId(req.user.restaurantId) })
+            .populate('tableId')
+            .sort({ reservationTime: -1 });
+        res.json(reservations);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getReservationsByRestaurant = async (req, res) => {
+    try {
+        const { restaurantId } = req.params;
+        const reservations = await Reservation.find({ restaurantId: new mongoose.Types.ObjectId(restaurantId) })
             .populate('tableId')
             .sort({ reservationTime: -1 });
         res.json(reservations);
@@ -346,7 +358,10 @@ exports.deleteReservation = async (req, res) => {
         const reservation = await Reservation.findById(req.params.id);
         if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
 
-        if (reservation.userId?.toString() !== req.user._id.toString() && req.user.role !== 'staff') {
+        const ownerId = reservation.userId?.toString();
+        const requesterId = req.user._id?.toString() || req.user.id?.toString();
+
+        if (ownerId !== requesterId && req.user.role !== 'staff') {
             return res.status(401).json({ message: 'Not authorized to cancel this reservation' });
         }
 

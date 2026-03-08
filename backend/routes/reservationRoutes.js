@@ -4,6 +4,7 @@ const {
     createReservation,
     getUserReservations,
     getRestaurantReservations,
+    getReservationsByRestaurant,
     checkIn,
     completeReservation,
     noShowReservation,
@@ -14,6 +15,7 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 router.post('/', protect, createReservation);
 router.get('/my', protect, getUserReservations);
 router.get('/restaurant', protect, authorize('staff'), getRestaurantReservations);
+router.get('/restaurant/:restaurantId', protect, authorize('staff'), getReservationsByRestaurant);
 router.post('/checkin', protect, authorize('staff'), checkIn);
 router.put('/:id/complete', protect, authorize('staff'), completeReservation);
 router.put('/:id/noshow', protect, authorize('staff'), noShowReservation);

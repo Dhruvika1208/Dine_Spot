@@ -7,6 +7,8 @@ import {
 import { Calendar, DollarSign, Clock, AlertCircle, TrendingUp, Users, Loader2, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import { useAuth } from '../../context/AuthContext';
+
 const StatCard = ({ label, value, icon: Icon, trend, color, description }) => (
     <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -43,14 +45,20 @@ const Loading = () => (
 );
 
 const StaffDashboard = () => {
+    const { user } = useAuth();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchStats = async () => {
+    // Optimized Fetching Logic: Consolidates metrics and reservations
+    const fetchStats = async (isSilent = false) => {
         try {
-            setLoading(true);
+            // Only show full-screen loader on initial mount or manual retry
+            if (!isSilent) setLoading(true);
+
+            // Fetch comprehensive dashboard data (includes stats, manifest, and chart data)
             const res = await axiosInstance.get('/api/staff/dashboard');
+
             if (res.data) {
                 setData(res.data);
                 setError(null);
@@ -58,20 +66,30 @@ const StaffDashboard = () => {
                 setError('Unable to load dashboard.');
             }
         } catch (err) {
-            console.log("Dashboard error:", err.response?.data || err.message);
+            console.error("Dashboard Sync Error:", err.response?.data || err.message);
             if (err.response?.status === 401) {
                 setError('SESSION_EXPIRED');
             } else {
                 setError('Unable to load dashboard.');
             }
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
         }
     };
 
+    // Effect for Initial Load and Periodic Synchronization
     useEffect(() => {
-        fetchStats();
-    }, []);
+        if (user?.restaurantId) {
+            fetchStats();
+
+            // High-frequency polling (10s) to reflect new reservations immediately
+            const pollInterval = setInterval(() => {
+                fetchStats(true);
+            }, 10000);
+
+            return () => clearInterval(pollInterval);
+        }
+    }, [user?.restaurantId]);
 
     if (loading) return <Loading />;
 
@@ -87,7 +105,7 @@ const StaffDashboard = () => {
             </div>
             <p className="text-slate-600 font-bold uppercase tracking-tight text-sm">{error || "Unable to load dashboard."}</p>
             <button
-                onClick={fetchStats}
+                onClick={() => fetchStats(false)}
                 className="bg-slate-900 text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-orange-600 transition-all font-sans"
             >
                 Retry
@@ -104,7 +122,7 @@ const StaffDashboard = () => {
                     <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2">Real-time operational overview</p>
                 </div>
                 <button
-                    onClick={fetchStats}
+                    onClick={() => fetchStats(false)}
                     className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all group"
                 >
                     <TrendingUp className="h-4 w-4 text-orange-600 group-hover:rotate-12 transition-transform" />

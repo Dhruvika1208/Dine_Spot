@@ -54,7 +54,7 @@ exports.getDashboardStats = async (req, res) => {
         ]);
 
         const todayReservations = await Reservation.find({
-            restaurantId,
+            restaurantId: new mongoose.Types.ObjectId(restaurantId),
             reservationTime: { $gte: startOfToday, $lte: endOfToday }
         }).populate('userId', 'name').sort({ reservationTime: 1 });
 

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
+
 const User = require('../models/User');
 const Staff = require('../models/Staff');
 const Restaurant = require('../models/Restaurant');
@@ -17,32 +18,184 @@ const images = {
     cafe: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80',
     asian: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80',
     seafood: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80',
-    continental: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
     indian: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80',
-    vegan: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
-    mughlai: 'https://images.unsplash.com/photo-1631515233367-289a478acca?auto=format&fit=crop&w=800&q=80',
-    french: 'https://images.unsplash.com/photo-1550966841-3ee7adac1668?auto=format&fit=crop&w=800&q=80',
-    pasta: 'https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format&fit=crop&w=800&q=80',
-    pub: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=800&q=80',
-    street: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80'
+    mexican: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80',
+    japanese: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80',
+    french: 'https://images.unsplash.com/photo-1525193612562-0ec53b0e5d7c?auto=format&fit=crop&w=800&q=60',
+    thai: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80',
+    chinese: 'https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=800&q=80',
+    mediterranean: 'https://images.unsplash.com/photo-1544124499-58912cbddaad?auto=format&fit=crop&w=800&q=80',
+    american: 'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=800&q=80',
+    korean: 'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=800&q=80'
 };
 
 const restaurantsData = [
-    { name: 'Italian Villa', location: 'Downtown', cuisine: 'Italian', description: 'Experience the soul of Italy with our wood-fired pizzas and artisanal pasta.', openingTime: '11:00', closingTime: '23:00', staffEmail: process.env.EMAIL_USER, image: images.italian, rating: 4.8 },
-    { name: 'BBQ House', location: 'Midtown', cuisine: 'Steakhouse', description: 'Slow-smoked perfection and premium cuts of aged beef.', openingTime: '12:00', closingTime: '22:00', staffEmail: process.env.EMAIL_USER, image: images.steak, rating: 4.6 },
-    { name: 'Coffee Corner', location: 'Uptown', cuisine: 'Cafe', description: 'Your daily sanctuary for specialty brews and hand-crafted pastries.', openingTime: '08:00', closingTime: '20:00', staffEmail: process.env.EMAIL_USER, image: images.cafe, rating: 4.5 },
-    { name: 'Urban Spice', location: 'City Center', cuisine: 'Fusion', description: 'A bold, modern interpretation of diverse Asian culinary traditions.', openingTime: '11:30', closingTime: '23:30', staffEmail: process.env.EMAIL_USER, image: images.asian, rating: 4.7 },
-    { name: 'Ocean Grill', location: 'Bayfront', cuisine: 'Seafood', description: 'Pristine seafood caught daily, served with a side of ocean breezes.', openingTime: '12:00', closingTime: '23:00', staffEmail: process.env.EMAIL_USER, image: images.seafood, rating: 4.9 },
-    { name: 'Golden Fork', location: 'West End', cuisine: 'Continental', description: 'Sophisticated dining where classic French meets modern European.', openingTime: '18:00', closingTime: '23:00', staffEmail: process.env.EMAIL_USER, image: images.continental, rating: 4.4 },
-    { name: 'Spice Symphony', location: 'East Side', cuisine: 'Indian', description: 'A rhythmic blend of traditional spices and contemporary flavors.', openingTime: '12:00', closingTime: '22:30', staffEmail: process.env.EMAIL_USER, image: images.indian, rating: 4.6 },
-    { name: 'The Green Bowl', location: 'South Plaza', cuisine: 'Vegan', description: 'Plant-based magic that nourishes the body and the soul.', openingTime: '10:00', closingTime: '21:00', staffEmail: process.env.EMAIL_USER, image: images.vegan, rating: 4.3 },
-    { name: 'Royal Tandoor', location: 'Old Town', cuisine: 'Mughlai', description: 'Regal recipes from the royal kitchens of ancient India.', openingTime: '12:30', closingTime: '23:00', staffEmail: process.env.EMAIL_USER, image: images.mughlai, rating: 4.7 },
-    { name: 'Sunset Bistro', location: 'Harbor', cuisine: 'French', description: 'Charming riverside dining with romantic French appetizers.', openingTime: '17:00', closingTime: '23:30', staffEmail: process.env.EMAIL_USER, image: images.french, rating: 4.8 },
-    { name: 'The Pasta Room', location: 'Little Italy', cuisine: 'Italian', description: 'Hand-rolled pasta made by our nonna every single morning.', openingTime: '11:00', closingTime: '22:00', staffEmail: process.env.EMAIL_USER, image: images.pasta, rating: 4.5 },
-    { name: 'Brew Haven', location: 'Industrial Park', cuisine: 'GastroPub', description: 'Where artisanal burgers meet locally crafted micro-brews.', openingTime: '16:00', closingTime: '01:00', staffEmail: process.env.EMAIL_USER, image: images.pub, rating: 4.2 },
-    { name: 'Midnight Bites', location: 'Night Market', cuisine: 'Street Food', description: 'The ultimate destination for late-night culinary adventures.', openingTime: '20:00', closingTime: '04:00', staffEmail: process.env.EMAIL_USER, image: images.street, rating: 4.4 }
+    {
+        name: 'The Italian Villa',
+        location: 'Downtown Core',
+        cuisine: 'Italian',
+        description: 'Authentic wood-fired pizzas and homemade pasta since 1985.',
+        openingTime: '11:00',
+        closingTime: '23:00',
+        staffEmail: 'manager@italianvilla.com',
+        image: images.italian,
+        rating: 4.8
+    },
+    {
+        name: 'Royal India',
+        location: 'West End',
+        cuisine: 'Indian',
+        description: 'Experience the rich tapestry of Indian spices in a regal setting.',
+        openingTime: '12:00',
+        closingTime: '22:30',
+        staffEmail: 'manager@royalindia.com',
+        image: images.indian,
+        rating: 4.7
+    },
+    {
+        name: 'Dragon Palace',
+        location: 'Chinatown',
+        cuisine: 'Chinese',
+        description: 'Tradition meets modernity with our award-winning dim sum and peking duck.',
+        openingTime: '10:00',
+        closingTime: '22:00',
+        staffEmail: 'manager@dragonpalace.com',
+        image: images.chinese,
+        rating: 4.6
+    },
+    {
+        name: 'El Mariachi',
+        location: 'Old Town',
+        cuisine: 'Mexican',
+        description: 'Spirited Mexican dining with hand-pressed tortillas and elite tequilas.',
+        openingTime: '11:00',
+        closingTime: '00:00',
+        staffEmail: 'manager@elmariachi.com',
+        image: images.mexican,
+        rating: 4.5
+    },
+    {
+        name: 'Sushi Zen',
+        location: 'Harbor District',
+        cuisine: 'Japanese',
+        description: 'Minimalist Japanese dining focusing on the pristine quality of seasonal fish.',
+        openingTime: '12:00',
+        closingTime: '22:00',
+        staffEmail: 'manager@sushizen.com',
+        image: images.japanese,
+        rating: 4.9
+    },
+    {
+        name: 'Olive Grove',
+        location: 'Bayside',
+        cuisine: 'Mediterranean',
+        description: 'Fresh, sun-drenched flavors from the coasts of Greece and Italy.',
+        openingTime: '11:00',
+        closingTime: '23:00',
+        staffEmail: 'manager@olivegrove.com',
+        image: images.mediterranean,
+        rating: 4.6
+    },
+    {
+        name: 'Siam Garden',
+        location: 'Parkside',
+        cuisine: 'Thai',
+        description: 'Harmonious Thai cuisine balancing sweet, sour, salty, and spicy notes.',
+        openingTime: '11:30',
+        closingTime: '22:30',
+        staffEmail: 'manager@siamgarden.com',
+        image: images.thai,
+        rating: 4.7
+    },
+    {
+        name: 'The Burger Lab',
+        location: 'Tech Hub',
+        cuisine: 'American',
+        description: 'Gourmet sliders and craft shakes in a modern, upbeat environment.',
+        openingTime: '11:00',
+        closingTime: '23:00',
+        staffEmail: 'manager@burgerlab.com',
+        image: images.american,
+        rating: 4.4
+    },
+    {
+        name: 'Le Bistro Lumier',
+        location: 'Museum District',
+        cuisine: 'French',
+        description: 'Intimate French dining with classic techniques and local ingredients.',
+        openingTime: '17:00',
+        closingTime: '23:00',
+        staffEmail: 'manager@bistrolumier.com',
+        image: images.french,
+        rating: 4.8
+    },
+    {
+        name: 'Seoul BBQ',
+        location: 'Koreatown',
+        cuisine: 'Korean',
+        description: 'Interactive tabletop grilling with premium meats and traditional banchan.',
+        openingTime: '12:00',
+        closingTime: '01:00',
+        staffEmail: 'manager@seoulbbq.com',
+        image: images.korean,
+        rating: 4.7
+    },
+    {
+        name: 'Steak & Co',
+        location: 'Financial District',
+        cuisine: 'Steakhouse',
+        description: 'Dry-aged prime cuts served in a sophisticated mahogany-clad dining room.',
+        openingTime: '12:00',
+        closingTime: '23:00',
+        staffEmail: 'manager@steakco.com',
+        image: images.steak,
+        rating: 4.7
+    },
+    {
+        name: 'Ocean Pearl',
+        location: 'Marina',
+        cuisine: 'Seafood',
+        description: 'The finest catch from local waters, served with ocean views.',
+        openingTime: '12:00',
+        closingTime: '22:00',
+        staffEmail: 'manager@oceanpearl.com',
+        image: images.seafood,
+        rating: 4.9
+    },
+    {
+        name: 'The Urban Cafe',
+        location: 'Uptown',
+        cuisine: 'Cafe',
+        description: 'Artisanal coffee and healthy brunch options for urban explorers.',
+        openingTime: '07:00',
+        closingTime: '18:00',
+        staffEmail: 'manager@urbancafe.com',
+        image: images.cafe,
+        rating: 4.5
+    },
+    {
+        name: 'Spice Route',
+        location: 'Silk Road Plaza',
+        cuisine: 'Fusion',
+        description: 'A bold fusion of Asian and Middle Eastern flavor profiles.',
+        openingTime: '11:30',
+        closingTime: '23:00',
+        staffEmail: 'manager@spiceroute.com',
+        image: images.asian,
+        rating: 4.6
+    },
+    {
+        name: 'Venice Bistro',
+        location: 'Canal Side',
+        cuisine: 'Italian',
+        description: 'Venetian-style tapas and sparkling Italian wines.',
+        openingTime: '12:00',
+        closingTime: '00:00',
+        staffEmail: 'manager@venicebistro.com',
+        image: images.italian,
+        rating: 4.7
+    }
 ];
-
 
 const seedData = async () => {
     try {
@@ -71,9 +224,22 @@ const seedData = async () => {
             ]);
 
             await MenuItem.insertMany([
-                { restaurantId: res._id, name: 'Symphony Starter', description: 'A delicate opening to your meal.', price: 14, category: 'Starter', available: true },
-                { restaurantId: res._id, name: 'Signature Main', description: 'Our most requested culinary masterpiece.', price: 32, category: 'Main Course', available: true },
-                { restaurantId: res._id, name: 'Velvet Finale', description: 'A rich, decadent end to your journey.', price: 12, category: 'Dessert', available: true }
+                {
+                    restaurantId: res._id,
+                    name: 'Signature Starter',
+                    description: 'Chef special starter',
+                    price: 14,
+                    category: 'Starter',
+                    available: true
+                },
+                {
+                    restaurantId: res._id,
+                    name: 'Signature Main',
+                    description: 'Most popular dish',
+                    price: 30,
+                    category: 'Main Course',
+                    available: true
+                }
             ]);
         }
 
@@ -84,7 +250,7 @@ const seedData = async () => {
             role: 'user'
         });
 
-        console.log('Premium Unified Seed Data Created (13 Restaurants with Images).');
+        console.log('Seed data created successfully with 15 curated restaurants');
         process.exit();
     } catch (error) {
         console.error('Seeding error:', error);

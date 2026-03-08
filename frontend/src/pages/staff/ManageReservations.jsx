@@ -14,10 +14,10 @@ const ManageReservations = () => {
     const [statusFilter, setStatusFilter] = useState('All');
     const [error, setError] = useState('');
 
-    const fetchRes = async () => {
+    const fetchRes = async (isSilent = false) => {
         console.log('Board: Synchronizing guest admissions...');
         try {
-            setLoading(true);
+            if (!isSilent) setLoading(true);
             const { data } = await axiosInstance.get('/api/reservations/restaurant');
             console.log('Board: Connection established. Admissions found:', data.length);
             setReservations(data);
@@ -25,11 +25,20 @@ const ManageReservations = () => {
             console.error('Board ERROR:', err);
             setError(err.response?.data?.message || 'Hub synchronization failed.');
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
         }
     };
 
-    useEffect(() => { fetchRes(); }, []);
+    useEffect(() => {
+        fetchRes();
+
+        // Polling: Automatically fetch latest reservations every 30 seconds
+        const pollInterval = setInterval(() => {
+            fetchRes(true);
+        }, 30000);
+
+        return () => clearInterval(pollInterval);
+    }, []);
 
     const handleAction = async (id, action) => {
         console.log(`Board Action: Triggering [${action}] for ${id}`);
