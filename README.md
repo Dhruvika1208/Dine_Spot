@@ -38,8 +38,8 @@ Update reservation status
 
 Add restaurants to favourites
 
-Tech Stack
-Frontend
+##Tech Stack
+###Frontend
 
 React.js
 
@@ -51,7 +51,7 @@ Axios
 
 Tailwind CSS
 
-Backend
+###Backend
 
 Node.js
 
