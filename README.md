@@ -39,6 +39,7 @@ Update reservation status
 Add restaurants to favourites
 
 ##Tech Stack
+
 ###Frontend
 
 React.js
