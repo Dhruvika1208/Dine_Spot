@@ -6,6 +6,9 @@ const tableSchema = mongoose.Schema(
         tableNumber: { type: String, required: true },
         capacity: { type: Number, required: true },
         status: { type: String, enum: ['Available', 'Reserved', 'Occupied'], default: 'Available' },
+        viewType: { type: String, default: 'Indoor' },
+        preference: { type: String, default: 'None' },
+        description: { type: String, default: '' }
     },
     { timestamps: true }
 );

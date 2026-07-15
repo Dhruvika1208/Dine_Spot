@@ -28,6 +28,8 @@ app.use('/api/reservations', require('./routes/reservationRoutes'));
 app.use('/api/menu', require('./routes/menuRoutes'));
 app.use('/api/tables', require('./routes/tableRoutes'));
 app.use('/api/staff', require('./routes/staffRoutes'));
+app.use('/api/upload', require('./routes/uploadRoutes'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Error Handler Middleware
 app.use((err, req, res, next) => {

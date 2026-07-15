@@ -10,9 +10,12 @@ import {
     BarChart3,
     ArrowLeft,
     Store,
-    ChevronRight
+    ChevronRight,
+    Sun,
+    Moon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTheme } from '../context/ThemeContext';
 
 const SidebarItem = ({ to, icon: Icon, label }) => {
     return (
@@ -38,11 +41,12 @@ const SidebarItem = ({ to, icon: Icon, label }) => {
 
 const StaffLayout = () => {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
 
     return (
-        <div className="min-h-screen bg-[#FDFCFB] flex font-sans">
+        <div className="min-h-screen bg-[#FDFCFB] dark:bg-slate-950 dark:text-white flex font-sans transition-colors duration-200">
             {/* Professional Dark Sidebar */}
             <aside className="w-72 bg-slate-900 text-white flex flex-col sticky top-0 h-screen z-40 overflow-hidden shadow-2xl">
                 <div className="p-8 border-b border-white/10">
@@ -63,6 +67,7 @@ const StaffLayout = () => {
                     <SidebarItem to="/staff/menu" icon={UtensilsCrossed} label="Menu" />
                     <SidebarItem to="/staff/tables" icon={TableIcon} label="Tables" />
                     <SidebarItem to="/staff/analytics" icon={BarChart3} label="Analytics" />
+                    <SidebarItem to="/staff/settings" icon={Store} label="Settings" />
                 </div>
 
                 <div className="p-6 border-t border-white/10">
@@ -89,25 +94,40 @@ const StaffLayout = () => {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Global Staff Header */}
-                <header className="h-[80px] bg-white border-b border-orange-100 flex items-center justify-between px-10 sticky top-0 z-30 shadow-sm">
+                <header className="h-[80px] bg-white dark:bg-slate-900 border-b border-orange-100 dark:border-slate-800 flex items-center justify-between px-10 sticky top-0 z-30 shadow-sm transition-colors duration-200">
                     <div className="flex items-center space-x-6">
                         <button
-                            onClick={() => navigate(-1)}
-                            className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-orange-50 hover:text-orange-600 transition-all group border border-slate-100"
+                            onClick={() => {
+                                if (window.history.length > 1 && location.pathname !== '/staff/dashboard') {
+                                    navigate(-1);
+                                } else {
+                                    navigate('/staff/dashboard');
+                                }
+                            }}
+                            className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-300 rounded-xl hover:bg-orange-50 dark:hover:bg-slate-700 hover:text-orange-600 transition-all group border border-slate-100 dark:border-slate-800"
                         >
                             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                         </button>
-                        <div className="h-6 w-[1px] bg-slate-200" />
+                        <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800" />
                         <div>
-                            <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">
+                            <h1 className="text-lg font-black text-slate-800 dark:text-white tracking-tight uppercase">
                                 {user?.restaurantName || 'Staff Control Panel'}
                             </h1>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4">
+                        {/* Theme Toggle Button */}
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-orange-50 dark:hover:bg-slate-800 transition-all border border-slate-100 dark:border-slate-800"
+                            title="Toggle Theme"
+                        >
+                            {theme === 'dark' ? <Sun className="h-4 w-4 text-amber-500" /> : <Moon className="h-4 w-4 text-indigo-600" />}
+                        </button>
+
                         <div className="text-right hidden sm:block">
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Operational Status</p>
+                            <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Operational Status</p>
                             <p className="text-[10px] font-bold text-emerald-600 flex items-center justify-end">
                                 <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full mr-2 animate-pulse" />
                                 Live & Synced

@@ -63,15 +63,37 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
+    const loginGoogle = async (credential) => {
+        const { data } = await axiosInstance.post('/api/auth/google', { credential });
+        const userData = { ...data, role: data.role || 'user' };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', userData.role);
+        return data;
+    };
+
     const logout = () => {
         setUser(null);
         localStorage.removeItem('user');
         localStorage.removeItem('token');
         localStorage.removeItem('role');
+        localStorage.removeItem('restaurantId');
+    };
+
+    const registerStaff = async (staffDataPayload) => {
+        const { data } = await axiosInstance.post('/api/auth/staff-register', staffDataPayload);
+        const staffData = { ...data.staff, role: data.role, restaurantId: data.restaurantId };
+        setUser(staffData);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', staffData.role);
+        localStorage.setItem('restaurantId', staffData.restaurantId);
+        localStorage.setItem('user', JSON.stringify(staffData));
+        return data;
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, loginUser, loginStaff, register, logout }}>
+        <AuthContext.Provider value={{ user, loading, loginUser, loginStaff, register, registerStaff, loginGoogle, logout }}>
             {!loading && children}
         </AuthContext.Provider>
     );

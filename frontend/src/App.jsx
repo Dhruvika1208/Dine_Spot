@@ -10,6 +10,7 @@ import AuthSelection from './pages/auth/AuthSelection';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import StaffLogin from './pages/auth/StaffLogin';
+import StaffRegister from './pages/auth/StaffRegister';
 
 
 // User Pages
@@ -18,6 +19,7 @@ import Restaurants from './pages/user/Restaurants';
 import RestaurantDetails from './pages/user/RestaurantDetails';
 import UserDashboard from './pages/user/UserDashboard';
 import Reservation from './pages/user/Reservation';
+import Favorites from './pages/user/Favorites';
 
 // Staff Pages
 import StaffDashboard from './pages/staff/StaffDashboard';
@@ -25,14 +27,16 @@ import ManageReservations from './pages/staff/ManageReservations';
 import ManageMenu from './pages/staff/ManageMenu';
 import ManageTables from './pages/staff/ManageTables';
 import Analytics from './pages/staff/Analytics';
+import ManageRestaurant from './pages/staff/ManageRestaurant';
 
 function App() {
     return (
         <ErrorBoundary>
             <Router>
                 <Routes>
-                    {/* ISOLATED STAFF LOGIN */}
+                    {/* ISOLATED STAFF LOGIN & SIGNUP */}
                     <Route path="/staff/login" element={<StaffLogin />} />
+                    <Route path="/staff/signup" element={<StaffRegister />} />
 
                     {/* USER ROUTES (WITH USER LAYOUT AND NAV) */}
                     <Route element={<UserLayout />}>
@@ -52,6 +56,11 @@ function App() {
                                 <UserDashboard />
                             </ProtectedRoute>
                         } />
+                        <Route path="/favorites" element={
+                            <ProtectedRoute role="user">
+                                <Favorites />
+                            </ProtectedRoute>
+                        } />
                     </Route>
 
                     {/* STAFF DASHBOARD (WITH STAFF LAYOUT AND SIDEBAR) */}
@@ -65,6 +74,7 @@ function App() {
                         <Route path="/staff/menu" element={<ManageMenu />} />
                         <Route path="/staff/tables" element={<ManageTables />} />
                         <Route path="/staff/analytics" element={<Analytics />} />
+                        <Route path="/staff/settings" element={<ManageRestaurant />} />
                     </Route>
 
                     {/* GLOBAL REDIRECTS */}

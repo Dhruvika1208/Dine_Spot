@@ -1,6 +1,7 @@
 const Reservation = require('../models/Reservation');
 const MenuItem = require('../models/MenuItem');
 const Table = require('../models/Table');
+const Staff = require('../models/Staff');
 const mongoose = require('mongoose');
 
 // Business Rule: Revenue is calculated as $40 per guest for completed reservations
@@ -81,5 +82,31 @@ exports.getDashboardStats = async (req, res) => {
     } catch (error) {
         console.error('Staff Stats: CRITICAL ERROR IN AGGREGATION:', error.message);
         res.status(500).json({ message: 'Internal server error during analysis generation.', error: error.message });
+    }
+};
+
+exports.changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: 'Current password and new password are required' });
+        }
+
+        const staff = await Staff.findById(req.user._id);
+        if (!staff) {
+            return res.status(404).json({ message: 'Staff member not found' });
+        }
+
+        const isMatch = await staff.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Incorrect current password' });
+        }
+
+        staff.password = newPassword;
+        await staff.save();
+
+        res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

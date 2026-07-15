@@ -15,6 +15,11 @@
   --text-main: #1c1917;
 }
 
+.dark {
+  --bg-main: #020617;
+  --text-main: #f8fafc;
+}
+
 body {
   margin: 0;
   font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;

@@ -23,7 +23,8 @@ exports.createReservation = async (req, res) => {
         phone,
         specialRequests,
         occasion,
-        seatingPreference
+        seatingPreference,
+        tableId
     } = req.body;
 
     console.log(`Reservation: New request from ${email} for restaurant ${restaurantId}`);
@@ -55,28 +56,57 @@ exports.createReservation = async (req, res) => {
 
         // 2. Table Selection
         const endTime = new Date(resTime.getTime() + 2 * 60 * 60 * 1000);
-        const tables = await Table.find({ restaurantId, capacity: { $gte: guests }, status: 'Available' }).sort({ capacity: 1 });
-
         let selectedTable = null;
-        for (const table of tables) {
-            const overlapping = await Reservation.findOne({
-                tableId: table._id,
-                status: { $in: ['Confirmed', 'CheckedIn'] },
-                $or: [
-                    { reservationTime: { $lt: endTime, $gte: resTime } },
-                    {
-                        $expr: {
-                            $and: [
-                                { $lt: ["$reservationTime", resTime] },
-                                { $gt: [{ $add: ["$reservationTime", 2 * 60 * 60 * 1000] }, resTime] }
-                            ]
+
+        if (tableId) {
+            const table = await Table.findById(tableId);
+            if (table && table.restaurantId.toString() === restaurantId) {
+                if (table.capacity < guests) {
+                    return res.status(400).json({ message: 'Selected table capacity is smaller than guest size' });
+                }
+                const overlapping = await Reservation.findOne({
+                    tableId: table._id,
+                    status: { $in: ['Confirmed', 'CheckedIn'] },
+                    $or: [
+                        { reservationTime: { $lt: endTime, $gte: resTime } },
+                        {
+                            $expr: {
+                                $and: [
+                                    { $lt: ["$reservationTime", resTime] },
+                                    { $gt: [{ $add: ["$reservationTime", 2 * 60 * 60 * 1000] }, resTime] }
+                                ]
+                            }
                         }
-                    }
-                ]
-            });
-            if (!overlapping) {
-                selectedTable = table;
-                break;
+                    ]
+                });
+                if (!overlapping) {
+                    selectedTable = table;
+                }
+            }
+        }
+
+        if (!selectedTable) {
+            const tables = await Table.find({ restaurantId, capacity: { $gte: guests } }).sort({ capacity: 1 });
+            for (const table of tables) {
+                const overlapping = await Reservation.findOne({
+                    tableId: table._id,
+                    status: { $in: ['Confirmed', 'CheckedIn'] },
+                    $or: [
+                        { reservationTime: { $lt: endTime, $gte: resTime } },
+                        {
+                            $expr: {
+                                $and: [
+                                    { $lt: ["$reservationTime", resTime] },
+                                    { $gt: [{ $add: ["$reservationTime", 2 * 60 * 60 * 1000] }, resTime] }
+                                ]
+                            }
+                        }
+                    ]
+                });
+                if (!overlapping) {
+                    selectedTable = table;
+                    break;
+                }
             }
         }
 

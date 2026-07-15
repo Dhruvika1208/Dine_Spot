@@ -2,11 +2,14 @@ const Table = require('../models/Table');
 
 exports.addTable = async (req, res) => {
     try {
-        const { tableNumber, capacity } = req.body;
+        const { tableNumber, capacity, viewType, preference, description } = req.body;
         const table = await Table.create({
             restaurantId: req.user.restaurantId,
             tableNumber,
-            capacity
+            capacity,
+            viewType,
+            preference,
+            description
         });
         res.status(201).json(table);
     } catch (error) {

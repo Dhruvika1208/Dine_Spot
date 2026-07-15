@@ -3,11 +3,13 @@ import axiosInstance from '../../utils/axiosInstance';
 import {
     Clock, Search, Filter, Calendar, Users,
     ArrowUpRight, CheckCircle2,
-    XCircle, Clock3, Ban, HelpCircle, Loader2, Info
+    XCircle, Clock3, Ban, HelpCircle, Loader2, Info, ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const ManageReservations = () => {
+    const navigate = useNavigate();
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -74,6 +76,23 @@ const ManageReservations = () => {
 
     return (
         <div className="space-y-10">
+            {/* Back Button */}
+            <div>
+                <button 
+                    onClick={() => {
+                        if (window.history.length > 1) {
+                            navigate(-1);
+                        } else {
+                            navigate('/staff/dashboard');
+                        }
+                    }}
+                    className="inline-flex items-center text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-600 font-black text-[10px] uppercase tracking-widest transition-all group"
+                >
+                    <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                    <span>Back to Dashboard</span>
+                </button>
+            </div>
+
             {/* Header Area */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-slate-100 pb-12">
                 <div>
