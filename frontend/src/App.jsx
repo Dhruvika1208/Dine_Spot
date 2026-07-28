@@ -43,7 +43,11 @@ function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/restaurants" element={<Restaurants />} />
                         <Route path="/restaurant/:id" element={<RestaurantDetails />} />
-                        <Route path="/reserve/:id" element={<Reservation />} />
+                        <Route path="/reserve/:id" element={
+                            <ProtectedRoute role="user">
+                                <Reservation />
+                            </ProtectedRoute>
+                        } />
 
                         {/* Static User Auth Pages inside layout to show nav */}
                         <Route path="/login" element={<Login />} />

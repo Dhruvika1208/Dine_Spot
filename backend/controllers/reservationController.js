@@ -395,6 +395,21 @@ exports.deleteReservation = async (req, res) => {
             return res.status(401).json({ message: 'Not authorized to cancel this reservation' });
         }
 
+        const isPast = new Date(reservation.reservationTime) < new Date();
+        const statusLower = reservation.status?.toLowerCase();
+
+        if (statusLower === 'cancelled') {
+            return res.status(400).json({ message: 'Reservation is already cancelled.' });
+        }
+
+        if (['completed', 'checkedin', 'noshow'].includes(statusLower)) {
+            return res.status(400).json({ message: `Cannot cancel a reservation with status: ${reservation.status}` });
+        }
+
+        if (isPast) {
+            return res.status(400).json({ message: 'Cannot cancel a reservation after the reservation time has passed.' });
+        }
+
         reservation.status = 'Cancelled';
         await reservation.save();
         res.json({ message: 'Reservation cancelled successfully' });

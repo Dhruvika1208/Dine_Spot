@@ -549,17 +549,17 @@ const restaurantsData = [
     // RAJAHMUNDRY (10 Unique Restaurants)
     // ==========================================
     {
-        name: 'Godavari Ruchulu Kitchen',
+        name: 'GVR Signature Restaurant',
         location: 'Rajahmundry',
         cuisine: 'Andhra',
-        description: 'Specializes in famous Pulasa fish curry, Rajahmundry rose milk, and natukodi pulusu.',
-        image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=600&auto=format&fit=crop',
+        description: 'Luxury fine dining, royal Godavari specialties, Pulasa fish curry, and signature natukodi biryani.',
+        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=600&auto=format&fit=crop',
         openingTime: '11:00',
         closingTime: '23:00',
-        email: 'godavariruchulu.rj@gmail.com',
-        staffEmail: 'manager.godavariruchulu@dinespot.com',
+        email: 'gvr.signature@dinespot.com',
+        staffEmail: 'manager.gvrsignature@dinespot.com',
         phoneNumber: '+91 883 2244583',
-        rating: 4.8
+        rating: 4.9
     },
     {
         name: 'River Bay Seafood Restaurant',

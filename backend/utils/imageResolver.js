@@ -199,8 +199,15 @@ exports.isImageValidForCuisine = (cuisine, image) => {
  * @returns {string} The resolved image URL.
  */
 exports.resolveImageForRestaurant = (restaurantId, cuisine, currentImage) => {
-    // 1. Keep valid http/https/uploads URLs directly (including Google Places photo URLs)
-    if (currentImage && (currentImage.startsWith('http://') || currentImage.startsWith('https://') || currentImage.startsWith('/uploads/'))) {
+    // 1. Keep valid http/https/uploads/data:image/blob URLs directly (including uploaded photos)
+    if (currentImage && (
+        currentImage.startsWith('http://') || 
+        currentImage.startsWith('https://') || 
+        currentImage.startsWith('/uploads/') || 
+        currentImage.startsWith('uploads/') || 
+        currentImage.startsWith('data:image/') || 
+        currentImage.startsWith('blob:')
+    )) {
         return currentImage;
     }
 

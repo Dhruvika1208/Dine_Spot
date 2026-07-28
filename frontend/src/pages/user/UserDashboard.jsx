@@ -11,6 +11,8 @@ const UserDashboard = () => {
     const [reservations, setReservations] = useState([]);
     const [loadingReservations, setLoadingReservations] = useState(true);
     const [activeTab, setActiveTab] = useState('reservations'); // 'reservations' | 'favorites'
+    const [statusFilter, setStatusFilter] = useState('All');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const { favorites, toggleFavorite, isFavorite, loading: loadingFavorites } = useFavorites();
 
@@ -158,121 +160,228 @@ const UserDashboard = () => {
                                         <Loader2 className="h-10 w-10 text-orange-600 animate-spin mb-4" />
                                         <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Syncing reservation manifest...</p>
                                     </div>
-                                ) : reservations.length > 0 ? (
-                                    <div className="grid grid-cols-1 gap-8">
-                                        {reservations.map((res, i) => (
-                                            <motion.div
-                                                key={res._id}
-                                                initial={{ opacity: 0, y: 15 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: i * 0.05 }}
-                                                className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-orange-100/50 dark:border-slate-800 flex flex-col lg:flex-row items-center gap-10 shadow-sm hover:shadow-xl transition-all"
-                                            >
-                                                {/* Image */}
-                                                <div className="w-full lg:w-48 h-48 rounded-[2.5rem] overflow-hidden border-4 border-orange-50 dark:border-slate-800 relative shrink-0 shadow-inner">
-                                                    <img 
-                                                        src={res.restaurantId?.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=500'} 
-                                                        className="w-full h-full object-cover" 
-                                                        alt="Restaurant" 
+                                ) : (() => {
+                                    const filtered = reservations.filter(res => {
+                                        const resName = res.restaurantId?.name || '';
+                                        const resLoc = res.restaurantId?.location || '';
+                                        const matchesSearch = resName.toLowerCase().includes(searchQuery.toLowerCase()) || resLoc.toLowerCase().includes(searchQuery.toLowerCase());
+                                        const matchesStatus = statusFilter === 'All' || res.status?.toLowerCase() === statusFilter.toLowerCase();
+                                        return matchesSearch && matchesStatus;
+                                    });
+
+                                    return (
+                                        <div className="space-y-6">
+                                            {/* Filters & Search Controls */}
+                                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-orange-100/50 dark:border-slate-800 shadow-sm">
+                                                <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                                                    {['All', 'Confirmed', 'Pending', 'Cancelled'].map((st) => (
+                                                        <button
+                                                            key={st}
+                                                            onClick={() => setStatusFilter(st)}
+                                                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                                                                statusFilter === st
+                                                                    ? 'bg-orange-600 text-white shadow-md'
+                                                                    : 'bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                                            }`}
+                                                        >
+                                                            {st}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <div className="relative flex-grow max-w-md">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Filter by restaurant name or location..."
+                                                        value={searchQuery}
+                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 font-bold text-xs text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-orange-500"
                                                     />
-                                                    <button
-                                                        onClick={() => toggleFavorite(res.restaurantId)}
-                                                        className="absolute top-4 left-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-2.5 rounded-xl shadow-sm hover:scale-110 transition-transform active:scale-95 border border-white dark:border-slate-700"
+                                                </div>
+                                            </div>
+
+                                            {filtered.length > 0 ? (
+                                                <div className="grid grid-cols-1 gap-8">
+                                                    {filtered.map((res, i) => (
+                                                        <motion.div
+                                                            key={res._id}
+                                                            initial={{ opacity: 0, y: 15 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            transition={{ delay: i * 0.05 }}
+                                                            className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-orange-100/50 dark:border-slate-800 flex flex-col lg:flex-row items-center gap-10 shadow-sm hover:shadow-xl transition-all"
+                                                        >
+                                                            {/* Image */}
+                                                            <div className="w-full lg:w-48 h-48 rounded-[2.5rem] overflow-hidden border-4 border-orange-50 dark:border-slate-800 relative shrink-0 shadow-inner">
+                                                                <SafeImage 
+                                                                    src={res.restaurantId?.image} 
+                                                                    type="restaurant"
+                                                                    keyword={res.restaurantId?.cuisine || res.restaurantId?.name}
+                                                                    className="w-full h-full object-cover" 
+                                                                    alt={res.restaurantId?.name || "Restaurant"} 
+                                                                />
+                                                                <button
+                                                                    onClick={() => toggleFavorite(res.restaurantId)}
+                                                                    className="absolute top-4 left-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-2.5 rounded-xl shadow-sm hover:scale-110 transition-transform active:scale-95 border border-white dark:border-slate-700"
+                                                                >
+                                                                    <Heart className={`h-4 w-4 ${isFavorite(res.restaurantId?._id) ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
+                                                                </button>
+                                                            </div>
+
+                                                            {/* Details */}
+                                                            <div className="flex-1 w-full space-y-4">
+                                                                <div className="flex flex-wrap justify-between items-start gap-4">
+                                                                    <div>
+                                                                        <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight uppercase italic">{res.restaurantId?.name}</h3>
+                                                                        <div className="flex items-center text-slate-400 dark:text-slate-500 text-xs font-bold mt-1">
+                                                                            <MapPin className="h-4 w-4 mr-1.5 text-orange-600" />
+                                                                            {res.restaurantId?.location || 'Premium Location'}
+                                                                        </div>
+                                                                    </div>
+                                                                    <span className={`px-5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusColor(res.status)} shadow-sm`}>
+                                                                        {res.status}
+                                                                    </span>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-orange-50/20 dark:bg-slate-950/40 p-5 rounded-[2rem] border border-orange-100/10 dark:border-slate-800">
+                                                                    <div className="flex items-center space-x-3">
+                                                                        <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"><Calendar className="h-4 w-4 text-orange-600" /></div>
+                                                                        <div>
+                                                                            <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Date</p>
+                                                                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{new Date(res.reservationTime).toLocaleDateString()}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center space-x-3">
+                                                                        <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"><Clock className="h-4 w-4 text-orange-600" /></div>
+                                                                        <div>
+                                                                            <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Time</p>
+                                                                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{new Date(res.reservationTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center space-x-3">
+                                                                        <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"><Users className="h-4 w-4 text-orange-600" /></div>
+                                                                        <div>
+                                                                            <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Guests</p>
+                                                                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{res.guests} People</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex items-center justify-between pt-2">
+                                                                    <div className="flex items-center space-x-2">
+                                                                        <div className="h-7 w-7 bg-slate-900 dark:bg-slate-800 rounded-full flex items-center justify-center text-[9px] font-black text-white uppercase italic">DS</div>
+                                                                        <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest italic">DineSpot Protocol Confirmed</p>
+                                                                    </div>
+                                                                     <div className="flex items-center space-x-2">
+                                                                        <button
+                                                                            onClick={() => handleShare(res.restaurantId)}
+                                                                            className="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-orange-50 dark:border-slate-800 text-slate-400 hover:text-orange-600 transition-all hover:scale-105 active:scale-95"
+                                                                            title="Share Spot"
+                                                                        >
+                                                                            <Share2 className="h-4 w-4" />
+                                                                        </button>
+
+                                                                        {(() => {
+                                                                            const isPast = new Date(res.reservationTime) < new Date();
+                                                                            const statusLower = res.status?.toLowerCase();
+                                                                            const isCancelled = statusLower === 'cancelled';
+                                                                            const isCompleted = statusLower === 'completed';
+                                                                            const isCheckedIn = statusLower === 'checkedin';
+                                                                            const isNoShow = statusLower === 'noshow';
+
+                                                                            const canCancel = !isPast && !isCancelled && !isCompleted && !isCheckedIn && !isNoShow;
+
+                                                                            let btnLabel = 'Cancel';
+                                                                            if (isCancelled) btnLabel = 'Cancelled';
+                                                                            else if (isCompleted) btnLabel = 'Completed';
+                                                                            else if (isCheckedIn) btnLabel = 'Checked In';
+                                                                            else if (isNoShow) btnLabel = 'No Show';
+                                                                            else if (isPast) btnLabel = 'Time Passed';
+
+                                                                            return (
+                                                                                <button
+                                                                                    onClick={() => handleCancel(res._id)}
+                                                                                    disabled={!canCancel}
+                                                                                    className={`text-xs font-black uppercase transition-all px-3 py-2 ${
+                                                                                        canCancel 
+                                                                                            ? 'text-slate-400 hover:text-rose-600 cursor-pointer' 
+                                                                                            : 'text-slate-300 dark:text-slate-600 opacity-50 cursor-not-allowed'
+                                                                                    }`}
+                                                                                >
+                                                                                    {btnLabel}
+                                                                                </button>
+                                                                            );
+                                                                        })()}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* QR Code Pass */}
+                                                            {res.qrCode && (() => {
+                                                                const isPast = new Date(res.reservationTime) < new Date();
+                                                                const statusLower = res.status?.toLowerCase();
+                                                                const isDeactivated = isPast || ['completed', 'checkedin', 'noshow', 'cancelled'].includes(statusLower);
+
+                                                                let badgeLabel = 'EXPIRED';
+                                                                if (statusLower === 'noshow') badgeLabel = 'NO SHOW';
+                                                                else if (statusLower === 'completed') badgeLabel = 'USED';
+                                                                else if (statusLower === 'cancelled') badgeLabel = 'CANCELLED';
+
+                                                                return (
+                                                                    <div className={`shrink-0 p-4 border-[8px] rounded-[2.5rem] relative group/qr transition-all ${
+                                                                        isDeactivated
+                                                                            ? 'border-slate-200 dark:border-slate-800/60 bg-slate-100 dark:bg-slate-900/60 opacity-70'
+                                                                            : 'border-slate-50 dark:border-slate-800 bg-white dark:bg-white/95 shadow-2xl'
+                                                                    }`}>
+                                                                        <div className="relative">
+                                                                            <img 
+                                                                                src={res.qrCode} 
+                                                                                className={`w-24 h-24 transition-all ${
+                                                                                    isDeactivated ? 'grayscale opacity-30 blur-[1px]' : 'opacity-90 group-hover:opacity-100'
+                                                                                }`} 
+                                                                                alt="QR Code" 
+                                                                            />
+                                                                            {isDeactivated && (
+                                                                                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/70 rounded-xl">
+                                                                                    <span className="text-[8px] font-black text-white uppercase tracking-widest text-center px-1">
+                                                                                        {badgeLabel}
+                                                                                    </span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className={`absolute -top-2 -right-2 p-2 rounded-xl shadow-lg border-2 ${
+                                                                            isDeactivated 
+                                                                                ? 'bg-slate-600 text-slate-300 border-slate-700' 
+                                                                                : 'bg-orange-600 text-white border-white dark:border-slate-800'
+                                                                        }`}>
+                                                                            <QrCode className="h-4 w-4" />
+                                                                        </div>
+                                                                        <p className={`text-center text-[8px] font-black tracking-[0.2em] mt-2 ${
+                                                                            isDeactivated ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'
+                                                                        }`}>
+                                                                            {isDeactivated ? 'Pass Deactivated' : 'Security Pass'}
+                                                                        </p>
+                                                                    </div>
+                                                                );
+                                                            })()}
+                                                        </motion.div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-32 space-y-6 bg-white dark:bg-slate-900 rounded-[3rem] border border-orange-100/50 dark:border-slate-800">
+                                                    <div className="w-20 h-20 bg-orange-50/30 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
+                                                        <Utensils className="h-8 w-8 text-orange-300" />
+                                                    </div>
+                                                    <h2 className="text-xl font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">No matching reservations found</h2>
+                                                    <Link
+                                                        to="/restaurants"
+                                                        className="inline-flex items-center text-orange-600 dark:text-orange-400 font-black uppercase tracking-widest text-xs border-b-2 border-orange-200 pb-1 hover:border-orange-600 transition-all"
                                                     >
-                                                        <Heart className={`h-4 w-4 ${isFavorite(res.restaurantId?._id) ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
-                                                    </button>
+                                                        Book an elite table
+                                                    </Link>
                                                 </div>
-
-                                                {/* Details */}
-                                                <div className="flex-1 w-full space-y-4">
-                                                    <div className="flex flex-wrap justify-between items-start gap-4">
-                                                        <div>
-                                                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight uppercase italic">{res.restaurantId?.name}</h3>
-                                                            <div className="flex items-center text-slate-400 dark:text-slate-500 text-xs font-bold mt-1">
-                                                                <MapPin className="h-4 w-4 mr-1.5 text-orange-600" />
-                                                                {res.restaurantId?.location || 'Premium Location'}
-                                                            </div>
-                                                        </div>
-                                                        <span className={`px-5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusColor(res.status)} shadow-sm`}>
-                                                            {res.status}
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-orange-50/20 dark:bg-slate-950/40 p-5 rounded-[2rem] border border-orange-100/10 dark:border-slate-800">
-                                                        <div className="flex items-center space-x-3">
-                                                            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"><Calendar className="h-4 w-4 text-orange-600" /></div>
-                                                            <div>
-                                                                <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Date</p>
-                                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{new Date(res.reservationTime).toLocaleDateString()}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center space-x-3">
-                                                            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"><Clock className="h-4 w-4 text-orange-600" /></div>
-                                                            <div>
-                                                                <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Time</p>
-                                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{new Date(res.reservationTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center space-x-3">
-                                                            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"><Users className="h-4 w-4 text-orange-600" /></div>
-                                                            <div>
-                                                                <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Guests</p>
-                                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{res.guests} People</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex items-center justify-between pt-2">
-                                                        <div className="flex items-center space-x-2">
-                                                            <div className="h-7 w-7 bg-slate-900 dark:bg-slate-800 rounded-full flex items-center justify-center text-[9px] font-black text-white uppercase italic">DS</div>
-                                                            <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest italic">DineSpot Protocol Confirmed</p>
-                                                        </div>
-                                                        <div className="flex items-center space-x-2">
-                                                            <button
-                                                                onClick={() => handleShare(res.restaurantId)}
-                                                                className="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-orange-50 dark:border-slate-800 text-slate-400 hover:text-orange-600 transition-all hover:scale-105 active:scale-95"
-                                                                title="Share Spot"
-                                                            >
-                                                                <Share2 className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleCancel(res._id)}
-                                                                disabled={res.status === 'Cancelled'}
-                                                                className="text-xs font-black uppercase text-slate-400 hover:text-rose-600 disabled:opacity-30 disabled:hover:text-slate-400 transition-all px-3 py-2"
-                                                            >
-                                                                {res.status === 'Cancelled' ? 'Cancelled' : 'Cancel'}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* QR Code Pass */}
-                                                {res.qrCode && (
-                                                    <div className="shrink-0 p-4 border-[8px] border-slate-50 dark:border-slate-800 rounded-[2.5rem] bg-white dark:bg-white/95 shadow-2xl relative group/qr">
-                                                        <img src={res.qrCode} className="w-24 h-24 opacity-90 group-hover:opacity-100 transition-opacity" alt="QR Code" />
-                                                        <div className="absolute -top-2 -right-2 bg-orange-600 text-white p-2 rounded-xl shadow-lg border-2 border-white dark:border-slate-800">
-                                                            <QrCode className="h-4 w-4" />
-                                                        </div>
-                                                        <p className="text-center text-[8px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] mt-2">Security Pass</p>
-                                                    </div>
-                                                )}
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-32 space-y-6 bg-white dark:bg-slate-900 rounded-[3rem] border border-orange-100/50 dark:border-slate-800">
-                                        <div className="w-20 h-20 bg-orange-50/30 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
-                                            <Utensils className="h-8 w-8 text-orange-300" />
+                                            )}
                                         </div>
-                                        <h2 className="text-xl font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">No active reservations</h2>
-                                        <Link
-                                            to="/restaurants"
-                                            className="inline-flex items-center text-orange-600 dark:text-orange-400 font-black uppercase tracking-widest text-xs border-b-2 border-orange-200 pb-1 hover:border-orange-600 transition-all"
-                                        >
-                                            Book an elite table
-                                        </Link>
-                                    </div>
-                                )}
+                                    );
+                                })()}
                             </motion.div>
                         ) : (
                             <motion.div

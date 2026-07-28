@@ -4,7 +4,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import {
     XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, CartesianGrid, BarChart, Bar
 } from 'recharts';
-import { Calendar, DollarSign, Clock, AlertCircle, TrendingUp, Users, Loader2, ArrowUpRight } from 'lucide-react';
+import { Calendar, IndianRupee, Clock, AlertCircle, TrendingUp, Users, Loader2, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import { useAuth } from '../../context/AuthContext';
@@ -147,8 +147,8 @@ const StaffDashboard = () => {
                 />
                 <StatCard
                     label="Revenue Est."
-                    value={`$${(data?.stats?.revenue || 0).toLocaleString()}`}
-                    icon={DollarSign}
+                    value={`₹${(data?.stats?.revenue || 0).toLocaleString()}`}
+                    icon={IndianRupee}
                     color="bg-emerald-600"
                     description="Projected today's revenue"
                 />

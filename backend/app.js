@@ -12,7 +12,9 @@ app.use(cors({
     origin: "http://localhost:5173",
     credentials: true
 }));
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Rate limiting
 const limiter = rateLimit({

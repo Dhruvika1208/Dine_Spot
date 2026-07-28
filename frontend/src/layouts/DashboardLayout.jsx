@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { DineSpotIcon } from '../components/DineSpotIcon';
 import {
     LayoutDashboard,
     CalendarCheck,
@@ -38,7 +39,7 @@ const DashboardLayout = () => {
                 <div className="p-6">
                     <div className="flex items-center space-x-2 mb-10">
                         <div className="bg-primary-600 p-2 rounded-lg">
-                            <TableIcon className="h-6 w-6 text-white" />
+                            <DineSpotIcon className="h-6 w-6 text-white" />
                         </div>
                         <span className="text-xl font-bold text-slate-800 tracking-tight">DineSpot <span className="text-primary-500">Pro</span></span>
                     </div>

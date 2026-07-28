@@ -7,11 +7,14 @@ import {
     ArrowRight, Loader2, Sparkles, AlertCircle, Info, ShieldCheck, Heart, Share2
 } from 'lucide-react';
 import { useFavorites } from '../../context/FavoritesContext';
+import { useAuth } from '../../context/AuthContext';
 import RestaurantCarousel from '../../components/RestaurantCarousel';
+import SafeImage from '../../components/SafeImage';
 
 const RestaurantDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [data, setData] = useState(null);
     const [menu, setMenu] = useState([]);
@@ -88,6 +91,10 @@ const RestaurantDetails = () => {
     }, [id]);
 
     const goToReservation = () => {
+        if (!user) {
+            navigate(`/login?redirect=/reserve/${id}`);
+            return;
+        }
         navigate(`/reserve/${id}`);
     };
 
@@ -252,16 +259,20 @@ const RestaurantDetails = () => {
                             transition={{ delay: i * 0.1 }}
                             className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-orange-100/50 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all flex flex-col h-full group"
                         >
-                            {item.image && (
-                                <div className="h-48 w-full rounded-2xl overflow-hidden mb-6">
-                                    <img src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={item.name} />
-                                </div>
-                            )}
+                            <div className="h-48 w-full rounded-2xl overflow-hidden mb-6">
+                                <SafeImage 
+                                    src={item.image} 
+                                    type="dish"
+                                    keyword={item.name || item.category}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                                    alt={item.name} 
+                                />
+                            </div>
                             <div className="flex justify-between items-start mb-6">
                                 <span className="bg-orange-50/40 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border border-orange-100 dark:border-slate-800">
                                     {item.category}
                                 </span>
-                                <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">${item.price}</p>
+                                <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">₹{item.price}</p>
                             </div>
                             <h4 className="text-2xl font-black text-slate-800 dark:text-white mb-3 tracking-tight uppercase italic">{item.name}</h4>
                             <p className="text-slate-500 dark:text-slate-400 font-medium text-sm leading-relaxed mb-8 flex-grow">{item.description}</p>

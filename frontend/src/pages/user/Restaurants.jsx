@@ -19,19 +19,7 @@ const Restaurants = () => {
         cuisine: '',
         rating: '',
         category: '',
-        priceRange: '',
-        openNow: false,
-        breakfast: false,
-        lunch: false,
-        dinner: false,
-        pureVeg: false,
-        nonVeg: false,
-        vegNonVeg: false,
-        outdoorSeating: false,
-        indoorSeating: false,
-        rooftop: false,
-        familyFriendly: false,
-        nearby: false
+        priceRange: ''
     });
     
     const { toggleFavorite, isFavorite } = useFavorites();
@@ -86,115 +74,118 @@ const Restaurants = () => {
         return R * c;
     };
 
-    // Client-side filtering logic to support all 17 combined parameters dynamically
+    // Helper function to parse 12h/24h time to minutes from midnight
+    const parseTimeToMinutes = (timeStr) => {
+        if (!timeStr) return null;
+        const str = String(timeStr).trim().toUpperCase();
+        const isPM = str.includes('PM');
+        const isAM = str.includes('AM');
+        const clean = str.replace(/[^0-9:]/g, '');
+        const parts = clean.split(':');
+        let hours = parseInt(parts[0], 10) || 0;
+        const minutes = parseInt(parts[1], 10) || 0;
+
+        if (isPM && hours < 12) hours += 12;
+        if (isAM && hours === 12) hours = 0;
+        return hours * 60 + minutes;
+    };
+
+    // Client-side filtering logic for core parameters
     const applyFilters = (list) => {
         return list.filter(res => {
-            // 1. City
+            const text = `${res.name || ''} ${res.cuisine || ''} ${res.location || ''} ${res.description || ''} ${res.highlightMessage || ''}`.toLowerCase();
+
+            // 1. Search Query
+            if (search.trim()) {
+                const query = search.trim().toLowerCase();
+                if (!text.includes(query)) return false;
+            }
+
+            // 2. City
             if (filters.city && res.location && !res.location.toLowerCase().includes(filters.city.toLowerCase())) {
                 return false;
             }
-            // 2. Cuisine
+
+            // 3. Cuisine
             if (filters.cuisine && res.cuisine && !res.cuisine.toLowerCase().includes(filters.cuisine.toLowerCase())) {
                 return false;
             }
-            // 3. Rating
+
+            // 4. Rating
             if (filters.rating) {
                 const minRating = parseFloat(filters.rating);
-                if (res.rating && res.rating < minRating) return false;
+                if ((res.rating || 0) < minRating) return false;
             }
-            // 4. Category
+
+            // 5. Category
             if (filters.category) {
                 const cat = filters.category.toLowerCase();
                 const matchesCategory = 
                     (res.cuisine && res.cuisine.toLowerCase().includes(cat)) ||
                     (res.description && res.description.toLowerCase().includes(cat)) ||
-                    (res.highlightMessage && res.highlightMessage.toLowerCase().includes(cat));
+                    (res.category && res.category.toLowerCase().includes(cat)) ||
+                    text.includes(cat);
                 if (!matchesCategory) return false;
             }
-            // 5. Price Range
+
+            // 6. Price Range
             if (filters.priceRange) {
-                const priceSymbols = ['$', '$$', '$$$', '$$$$'];
-                const resPrice = res.priceRange || priceSymbols[res.name.length % 4];
-                if (resPrice !== filters.priceRange) return false;
-            }
-            // 6. Open Now
-            if (filters.openNow) {
-                const now = new Date();
-                const currentHourMin = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-                const openTime = res.openingTime || '09:00';
-                const closeTime = res.closingTime || '22:00';
-                if (currentHourMin < openTime || currentHourMin > closeTime) {
+                const targetPrice = filters.priceRange;
+                const resPrice = res.priceRange || '$';
+                if (resPrice !== targetPrice && !resPrice.includes(targetPrice)) {
                     return false;
                 }
-            }
-            // 7. Breakfast
-            if (filters.breakfast) {
-                const openTime = res.openingTime || '09:00';
-                if (openTime > '11:00') return false;
-            }
-            // 8. Lunch
-            if (filters.lunch) {
-                const openTime = res.openingTime || '09:00';
-                const closeTime = res.closingTime || '22:00';
-                if (openTime > '15:00' || closeTime < '12:00') return false;
-            }
-            // 9. Dinner
-            if (filters.dinner) {
-                const closeTime = res.closingTime || '22:00';
-                if (closeTime < '18:00') return false;
-            }
-            // 10. Pure Veg
-            if (filters.pureVeg) {
-                const text = `${res.name} ${res.cuisine} ${res.description}`.toLowerCase();
-                if (!text.includes('veg') || text.includes('non-veg') || text.includes('non veg')) return false;
-            }
-            // 11. Non-Veg
-            if (filters.nonVeg) {
-                const text = `${res.name} ${res.cuisine} ${res.description}`.toLowerCase();
-                if (!text.includes('non-veg') && !text.includes('non veg') && !text.includes('chicken') && !text.includes('meat') && !text.includes('seafood') && !text.includes('mutton') && !text.includes('fish')) return false;
-            }
-            // 12. Veg & Non-Veg
-            if (filters.vegNonVeg) {
-                const text = `${res.name} ${res.cuisine} ${res.description}`.toLowerCase();
-                const hasVeg = text.includes('veg');
-                const hasNonVeg = text.includes('non-veg') || text.includes('non veg') || text.includes('chicken') || text.includes('meat') || text.includes('fish');
-                if (!hasVeg || !hasNonVeg) return false;
-            }
-            // 13. Outdoor Seating
-            if (filters.outdoorSeating) {
-                const text = `${res.name} ${res.description}`.toLowerCase();
-                const matches = text.includes('outdoor') || text.includes('terrace') || text.includes('garden') || text.includes('open air') || text.includes('balcony') || (res.name.length % 2 === 0);
-                if (!matches) return false;
-            }
-            // 14. Indoor Seating
-            if (filters.indoorSeating) {
-                const text = `${res.name} ${res.description}`.toLowerCase();
-                const matches = text.includes('indoor') || text.includes('cozy') || text.includes('classic') || text.includes('ac') || (res.name.length % 3 !== 0);
-                if (!matches) return false;
-            }
-            // 15. Rooftop
-            if (filters.rooftop) {
-                const text = `${res.name} ${res.description}`.toLowerCase();
-                const matches = text.includes('rooftop') || text.includes('sky') || text.includes('roof') || (res.name.length % 5 === 0);
-                if (!matches) return false;
-            }
-            // 16. Family Friendly
-            if (filters.familyFriendly) {
-                const text = `${res.name} ${res.description}`.toLowerCase();
-                const matches = text.includes('family') || text.includes('kids') || text.includes('friendly') || text.includes('group') || (res.name.length % 4 !== 0);
-                if (!matches) return false;
-            }
-            // 17. Nearby
-            if (filters.nearby && userCoords) {
-                const distance = calculateDistance(userCoords.latitude, userCoords.longitude, res.latitude, res.longitude);
-                if (distance > 15) return false;
             }
 
             return true;
         });
     };
 
-    const filteredRestaurants = applyFilters(restaurants);
+    const sortRajahmundryFirst = (list) => {
+        const getPriorityScore = (resObj) => {
+            const name = (resObj.name || '').toLowerCase();
+            const loc = (resObj.location || '').toLowerCase();
+            const desc = (resObj.description || '').toLowerCase();
+            const text = `${name} ${loc} ${desc}`;
+
+            // #1: GVR Signature
+            if (name.includes('gvr signature') || name.includes('gvr')) {
+                return 1;
+            }
+
+            // #2: China Town RJ
+            if (name.includes('china town') || name.includes('chinatown')) {
+                return 2;
+            }
+
+            // #3: Other Rajahmundry restaurants
+            if (text.includes('rajahmundry') || text.includes('rajamahendravaram') || text.includes('rjy')) {
+                return 3;
+            }
+
+            // #4: Other cities
+            return 4;
+        };
+
+        return [...list].sort((a, b) => {
+            const scoreA = getPriorityScore(a);
+            const scoreB = getPriorityScore(b);
+
+            if (scoreA !== scoreB) {
+                return scoreA - scoreB;
+            }
+
+            const ratingA = a.rating || 0;
+            const ratingB = b.rating || 0;
+            if (ratingB !== ratingA) {
+                return ratingB - ratingA;
+            }
+
+            return (a.name || '').localeCompare(b.name || '');
+        });
+    };
+
+    const filteredRestaurants = sortRajahmundryFirst(applyFilters(restaurants));
     const activeFiltersCount = Object.entries(filters).filter(([k, v]) => v === true || (typeof v === 'string' && v !== '')).length;
 
     return (
@@ -448,51 +439,11 @@ const Restaurants = () => {
                                             onChange={(e) => setFilters(prev => ({ ...prev, priceRange: e.target.value }))}
                                         >
                                             <option value="">All Price Ranges</option>
-                                            <option value="$">Low ($)</option>
-                                            <option value="$$">Medium ($$)</option>
-                                            <option value="$$$">High ($$$)</option>
-                                            <option value="$$$$">Luxury ($$$$)</option>
+                                            <option value="$">Low (₹)</option>
+                                            <option value="$$">Medium (₹₹)</option>
+                                            <option value="$$$">High (₹₹₹)</option>
+                                            <option value="$$$$">Luxury (₹₹₹₹)</option>
                                         </select>
-                                    </div>
-                                </div>
-
-                                {/* Boolean Toggles */}
-                                <div className="space-y-4">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-950 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Amenities & Preferences</h3>
-                                    
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {[
-                                            { name: 'nearby', label: 'Nearby (<15km)', icon: MapPin },
-                                            { name: 'openNow', label: 'Open Now', icon: Clock },
-                                            { name: 'breakfast', label: 'Breakfast', icon: Coffee },
-                                            { name: 'lunch', label: 'Lunch', icon: UtensilsCrossed },
-                                            { name: 'dinner', label: 'Dinner', icon: Star },
-                                            { name: 'pureVeg', label: 'Pure Veg', icon: Sparkles },
-                                            { name: 'nonVeg', label: 'Non-Veg', icon: Sparkles },
-                                            { name: 'vegNonVeg', label: 'Veg & Non-Veg', icon: Sparkles },
-                                            { name: 'outdoorSeating', label: 'Outdoor Seating', icon: Coffee },
-                                            { name: 'indoorSeating', label: 'Indoor Seating', icon: Sofa },
-                                            { name: 'rooftop', label: 'Rooftop Seating', icon: Sparkles },
-                                            { name: 'familyFriendly', label: 'Family Friendly', icon: Users }
-                                        ].map(item => {
-                                            const IconComp = item.icon;
-                                            const isSelected = filters[item.name];
-                                            return (
-                                                <button
-                                                    key={item.name}
-                                                    type="button"
-                                                    onClick={() => setFilters(prev => ({ ...prev, [item.name]: !prev[item.name] }))}
-                                                    className={`p-3 rounded-xl border font-bold text-xs text-left transition-all flex items-center gap-3 ${
-                                                        isSelected
-                                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                                                            : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-indigo-400 dark:hover:border-slate-700'
-                                                    }`}
-                                                >
-                                                    <IconComp className={`h-4 w-4 ${isSelected ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`} />
-                                                    <span className="truncate">{item.label}</span>
-                                                </button>
-                                            );
-                                        })}
                                     </div>
                                 </div>
                             </div>
@@ -505,19 +456,7 @@ const Restaurants = () => {
                                         cuisine: '',
                                         rating: '',
                                         category: '',
-                                        priceRange: '',
-                                        openNow: false,
-                                        breakfast: false,
-                                        lunch: false,
-                                        dinner: false,
-                                        pureVeg: false,
-                                        nonVeg: false,
-                                        vegNonVeg: false,
-                                        outdoorSeating: false,
-                                        indoorSeating: false,
-                                        rooftop: false,
-                                        familyFriendly: false,
-                                        nearby: false
+                                        priceRange: ''
                                     })}
                                     className="flex-1 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all hover:bg-slate-100 dark:hover:bg-slate-800/50"
                                 >

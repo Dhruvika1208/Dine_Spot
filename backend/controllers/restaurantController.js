@@ -20,37 +20,62 @@ exports.getRestaurants = async (req, res) => {
 
         const restaurants = await Restaurant.find(query);
 
-        // Sort logic: seeded sorted by specific city list, manually added at end sorted by createdAt ascending
-        const cityOrder = ['Rajahmundry', 'Kakinada', 'Amalapuram', 'Visakhapatnam', 'Vijayawada', 'Guntur', 'Tirupati', 'Hyderabad', 'Bangalore', 'Chennai'];
-        
-        restaurants.sort((a, b) => {
-            // Manually added ones are placed at the end
-            if (a.isManuallyAdded && !b.isManuallyAdded) return 1;
-            if (!a.isManuallyAdded && b.isManuallyAdded) return -1;
-            
-            if (a.isManuallyAdded && b.isManuallyAdded) {
-                // Both are manually added, sort by createdAt ascending
-                return new Date(a.createdAt) - new Date(b.createdAt);
-            }
-            
-            // Both are seeded (not manually added)
-            const cityA = a.location ? a.location.trim().toLowerCase() : '';
-            const cityB = b.location ? b.location.trim().toLowerCase() : '';
-            
-            const indexA = cityOrder.findIndex(c => c.toLowerCase() === cityA);
-            const indexB = cityOrder.findIndex(c => c.toLowerCase() === cityB);
-            
-            if (indexA !== -1 && indexB !== -1) {
-                if (indexA !== indexB) {
-                    return indexA - indexB;
-                }
-            } else if (indexA !== -1) {
-                return -1;
-            } else if (indexB !== -1) {
+        // Sort logic: 1. GVR Signature, 2. China Town RJ, 3. Other Rajahmundry, 4. Remaining cities
+        const getPriorityScore = (resObj) => {
+            const name = (resObj.name || '').toLowerCase();
+            const loc = (resObj.location || '').toLowerCase();
+            const desc = (resObj.description || '').toLowerCase();
+            const text = `${name} ${loc} ${desc}`;
+
+            // #1: GVR Signature
+            if (name.includes('gvr signature') || name.includes('gvr')) {
                 return 1;
             }
-            
-            // Fallback to name comparison
+
+            // #2: China Town RJ
+            if (name.includes('china town') || name.includes('chinatown')) {
+                return 2;
+            }
+
+            // #3: Other Rajahmundry restaurants
+            if (text.includes('rajahmundry') || text.includes('rajamahendravaram') || text.includes('rjy')) {
+                return 3;
+            }
+
+            // #4: Other cities
+            return 4;
+        };
+
+        restaurants.sort((a, b) => {
+            const scoreA = getPriorityScore(a);
+            const scoreB = getPriorityScore(b);
+
+            if (scoreA !== scoreB) {
+                return scoreA - scoreB;
+            }
+
+            // 2. City order prioritization for remaining spots (score 4)
+            const cityOrder = ['kakinada', 'amalapuram', 'visakhapatnam', 'vijayawada', 'guntur', 'tirupati', 'hyderabad', 'bangalore', 'chennai'];
+            const findCityIndex = (loc) => cityOrder.findIndex(c => (loc || '').toLowerCase().includes(c));
+
+            const idxA = findCityIndex(a.location);
+            const idxB = findCityIndex(b.location);
+
+            if (idxA !== -1 && idxB !== -1) {
+                if (idxA !== idxB) return idxA - idxB;
+            } else if (idxA !== -1) {
+                return -1;
+            } else if (idxB !== -1) {
+                return 1;
+            }
+
+            // 3. Higher rating first
+            const ratingA = a.rating || 0;
+            const ratingB = b.rating || 0;
+            if (ratingB !== ratingA) {
+                return ratingB - ratingA;
+            }
+
             return (a.name || '').localeCompare(b.name || '');
         });
 

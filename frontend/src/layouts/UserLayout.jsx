@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { LogOut, LayoutDashboard, User, Store, X, Mail, Lock, Sparkles, ChefHat, ChevronDown, UserCircle, LogIn, UserPlus, Sun, Moon, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import { DineSpotIcon } from '../components/DineSpotIcon';
 
 const UserLayout = () => {
     const { user, logout } = useAuth();
@@ -31,7 +32,7 @@ const UserLayout = () => {
                     {/* Logo Section */}
                     <Link to="/" className="flex items-center space-x-3 group">
                         <div className="bg-orange-600 p-3 rounded-2xl group-hover:rotate-12 transition-all shadow-xl shadow-orange-200">
-                            <Utensils className="h-6 w-6 text-white" />
+                            <DineSpotIcon className="h-6 w-6 text-white" />
                         </div>
                         <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter uppercase relative">
                             DineSpot
@@ -160,7 +161,7 @@ const UserLayout = () => {
                     <div>
                         <div className="flex items-center space-x-3 mb-6">
                             <div className="bg-orange-600 p-2.5 rounded-xl">
-                                <Utensils className="h-5 w-5 text-white" />
+                                <DineSpotIcon className="h-5 w-5 text-white" />
                             </div>
                             <span className="text-2xl font-black text-white tracking-tighter uppercase">DineSpot</span>
                         </div>
@@ -182,12 +183,6 @@ const UserLayout = () => {
         </div>
     );
 };
-
-const Utensils = ({ className }) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" /><path d="M7 2v20" /><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
-    </svg>
-);
 
 export default UserLayout;
 

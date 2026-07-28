@@ -44,7 +44,7 @@ const getFallback = (type, keyword = '') => {
 
 const getFullImageUrl = (src) => {
     if (!src || typeof src !== 'string') return '';
-    if (src.startsWith('http://') || src.startsWith('https://')) {
+    if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:image/') || src.startsWith('blob:')) {
         return src;
     }
     // Normalize backslashes to forward slashes
@@ -61,7 +61,7 @@ const getFullImageUrl = (src) => {
 
 const isValidUrl = (string) => {
     if (!string || typeof string !== 'string') return false;
-    if (string.startsWith('http://') || string.startsWith('https://')) return true;
+    if (string.startsWith('http://') || string.startsWith('https://') || string.startsWith('data:image/') || string.startsWith('blob:')) return true;
     const normalized = string.replace(/\\/g, '/');
     return normalized.startsWith('uploads/') || normalized.startsWith('/uploads/');
 };

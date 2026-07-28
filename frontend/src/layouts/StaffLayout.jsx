@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { DineSpotIcon } from '../components/DineSpotIcon';
 import {
     LayoutDashboard,
     CalendarCheck,
@@ -52,7 +53,7 @@ const StaffLayout = () => {
                 <div className="p-8 border-b border-white/10">
                     <div className="flex items-center space-x-3">
                         <div className="bg-orange-600 p-2.5 rounded-xl shadow-lg">
-                            <Store className="h-6 w-6 text-white" />
+                            <DineSpotIcon className="h-6 w-6 text-white" />
                         </div>
                         <div>
                             <h2 className="text-xl font-black tracking-tighter leading-none italic uppercase">DineSpot</h2>

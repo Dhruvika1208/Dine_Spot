@@ -64,8 +64,9 @@ const StaffRegister = () => {
 
     // Handle Cover Image Upload
     const handleCoverImageChange = async (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files?.[0];
         if (!file) return;
+        e.target.value = '';
 
         const formData = new FormData();
         formData.append('image', file);
@@ -78,7 +79,12 @@ const StaffRegister = () => {
             });
             setCoverImage(data.url);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to upload cover image.');
+            console.error('Cover upload server error, using Base64 fallback:', err);
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                setCoverImage(ev.target.result);
+            };
+            reader.readAsDataURL(file);
         } finally {
             setUploadingCover(false);
         }
@@ -86,24 +92,36 @@ const StaffRegister = () => {
 
     // Handle Gallery Images Upload (multiple)
     const handleGalleryImagesChange = async (e) => {
-        const files = Array.from(e.target.files);
+        const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
+        e.target.value = '';
 
         setUploadingGallery(true);
         setError('');
         try {
             const uploadedUrls = [];
             for (const file of files) {
-                const formData = new FormData();
-                formData.append('image', file);
-                const { data } = await axiosInstance.post('/api/upload/public', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                uploadedUrls.push(data.url);
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    const { data } = await axiosInstance.post('/api/upload/public', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    uploadedUrls.push(data.url);
+                } catch (err) {
+                    await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            uploadedUrls.push(ev.target.result);
+                            resolve();
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
             }
             setGallery(prev => [...prev, ...uploadedUrls]);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to upload some gallery images.');
+            console.error('Gallery upload error:', err);
         } finally {
             setUploadingGallery(false);
         }

@@ -4,7 +4,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     LineChart, Line, AreaChart, Area
 } from 'recharts';
-import { TrendingUp, Users, DollarSign, Calendar, ArrowLeft } from 'lucide-react';
+import { TrendingUp, Users, IndianRupee, Calendar, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Analytics = () => {

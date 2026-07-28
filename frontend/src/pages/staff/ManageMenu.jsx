@@ -3,6 +3,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import { Plus, Trash2, Edit3, X, Check, Search, Filter, Info, Loader2, Sparkles, ChefHat, Image as ImageIcon, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import SafeImage from '../../components/SafeImage';
 
 const ManageMenu = () => {
     const navigate = useNavigate();
@@ -40,8 +41,9 @@ const ManageMenu = () => {
     useEffect(() => { fetchMenu(); }, []);
 
     const handleImageUpload = async (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files?.[0];
         if (!file) return;
+        e.target.value = '';
 
         const uploadPayload = new FormData();
         uploadPayload.append('image', file);
@@ -55,8 +57,12 @@ const ManageMenu = () => {
             });
             setFormData(prev => ({ ...prev, image: data.url }));
         } catch (err) {
-            console.error('Upload Error:', err);
-            alert(err.response?.data?.message || 'File upload failed. Only JPG, PNG, WEBP are allowed under 15MB.');
+            console.error('Server Upload Error, using local Base64 fallback:', err);
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setFormData(prev => ({ ...prev, image: event.target.result }));
+            };
+            reader.readAsDataURL(file);
         } finally {
             setUploadingImage(false);
         }
@@ -193,11 +199,13 @@ const ManageMenu = () => {
                                     <td className="px-8 py-6">
                                         <div className="flex items-center space-x-4">
                                             <div className="h-14 w-14 bg-orange-50 dark:bg-slate-800 rounded-2xl overflow-hidden border border-orange-100 dark:border-slate-700 relative group-hover:scale-105 transition-transform">
-                                                {item.image ? (
-                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <ChefHat className="h-6 w-6 text-orange-300 dark:text-slate-600 absolute inset-0 m-auto" />
-                                                )}
+                                                <SafeImage
+                                                    src={item.image}
+                                                    type="dish"
+                                                    keyword={item.name || item.category}
+                                                    className="w-full h-full object-cover"
+                                                    alt={item.name}
+                                                />
                                             </div>
                                             <div>
                                                 <p className="font-bold text-slate-800 dark:text-white text-sm tracking-tight">{item.name}</p>
@@ -211,7 +219,7 @@ const ManageMenu = () => {
                                         </span>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <span className="text-sm font-black text-slate-700 dark:text-slate-300">${item.price}</span>
+                                        <span className="text-sm font-black text-slate-700 dark:text-slate-300">₹{item.price}</span>
                                     </td>
                                     <td className="px-8 py-6">
                                         <button
@@ -278,7 +286,7 @@ const ManageMenu = () => {
                                             />
                                         </div>
                                         <div className="space-y-2 col-span-2 sm:col-span-1">
-                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Price ($)</label>
+                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Price (₹)</label>
                                             <input
                                                 required type="number" step="0.01" placeholder="0.00"
                                                 className="w-full bg-slate-50 dark:bg-slate-800 dark:text-white border-none rounded-xl py-4 px-6 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-orange-500"
@@ -302,11 +310,13 @@ const ManageMenu = () => {
                                             <div className="flex gap-4 items-center">
                                                 {/* Preview Frame */}
                                                 <div className="h-16 w-16 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-orange-100 dark:border-slate-700 overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
-                                                    {formData.image ? (
-                                                        <img src={formData.image} alt="Dish Preview" className="h-full w-full object-cover" />
-                                                    ) : (
-                                                        <ImageIcon className="h-6 w-6 text-slate-300 dark:text-slate-600" />
-                                                    )}
+                                                    <SafeImage
+                                                        src={formData.image}
+                                                        type="dish"
+                                                        keyword={formData.name || formData.category}
+                                                        className="h-full w-full object-cover"
+                                                        alt="Dish Preview"
+                                                    />
                                                     {uploadingImage && (
                                                         <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center">
                                                             <Loader2 className="h-4 w-4 text-white animate-spin" />

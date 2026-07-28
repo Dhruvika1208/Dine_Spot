@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Loader2, ChefHat, User, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { DineSpotIcon } from '../../components/DineSpotIcon';
 
 const Login = () => {
     const location = useLocation();
@@ -11,6 +12,7 @@ const Login = () => {
 
     const searchParams = new URLSearchParams(location.search);
     const role = searchParams.get('role') || 'user';
+    const redirect = searchParams.get('redirect');
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -23,7 +25,7 @@ const Login = () => {
         setLoading(true);
         try {
             await loginGoogle(response.credential);
-            navigate('/');
+            navigate(redirect || '/');
         } catch (err) {
             setError(err.response?.data?.message || 'Google authentication failed.');
         } finally {
@@ -69,10 +71,10 @@ const Login = () => {
         try {
             if (role === 'staff') {
                 await loginStaff(email, password);
-                navigate('/staff/dashboard');
+                navigate(redirect || '/staff/dashboard');
             } else {
                 await loginUser(email, password);
-                navigate('/');
+                navigate(redirect || '/');
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Authentication failed. Please check your credentials.');
@@ -98,7 +100,7 @@ const Login = () => {
                     <div>
                         <Link to="/" className="flex items-center space-x-3 mb-24 group">
                             <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/20 group-hover:bg-white/30 transition-all">
-                                <Utensils className="h-6 w-6 text-white" />
+                                <DineSpotIcon className="h-6 w-6 text-white" />
                             </div>
                             <span className="text-2xl font-black uppercase tracking-tighter">DineSpot</span>
                         </Link>
@@ -234,11 +236,5 @@ const Login = () => {
         </div>
     );
 };
-
-const Utensils = ({ className }) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" /><path d="M7 2v20" /><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
-    </svg>
-);
 
 export default Login;

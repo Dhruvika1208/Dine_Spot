@@ -69,8 +69,10 @@ const ManageReservations = () => {
     };
 
     const filteredReservations = reservations.filter(res => {
-        const matchesSearch = res.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || res.email.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'All' || res.status === statusFilter;
+        const nameStr = res.fullName || '';
+        const emailStr = res.email || '';
+        const matchesSearch = nameStr.toLowerCase().includes(searchTerm.toLowerCase()) || emailStr.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'All' || res.status?.toLowerCase() === statusFilter.toLowerCase();
         return matchesSearch && matchesStatus;
     });
 
